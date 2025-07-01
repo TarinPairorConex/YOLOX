@@ -163,6 +163,8 @@ class Predictor(object):
                 self.nmsthre, class_agnostic=True
             )
             logger.info("Infer time: {:.4f}s".format(time.time() - t0))
+        print("outputs:", outputs)
+        print("img_info:", img_info)
         return outputs, img_info
 
     def visual(self, output, img_info, cls_conf=0.35):
@@ -173,12 +175,15 @@ class Predictor(object):
         output = output.cpu()
 
         bboxes = output[:, 0:4]
+        print("bboxes:", bboxes)
 
         # preprocessing: resize
         bboxes /= ratio
 
         cls = output[:, 6]
         scores = output[:, 4] * output[:, 5]
+        print("cls:", cls)
+        print("scores:", scores)
 
         vis_res = vis(img, bboxes, scores, cls, cls_conf, self.cls_names)
         return vis_res
@@ -280,7 +285,7 @@ def main(exp, args):
         else:
             ckpt_file = args.ckpt
         logger.info("loading checkpoint")
-        ckpt = torch.load(ckpt_file, map_location="cpu")
+        ckpt = torch.load(ckpt_file, map_location="cpu", weights_only=False)
         # load the model state dict
         model.load_state_dict(ckpt["model"])
         logger.info("loaded checkpoint done.")
